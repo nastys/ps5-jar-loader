@@ -8,6 +8,7 @@ import org.ps5jb.sdk.core.SdkException;
 import org.ps5jb.sdk.core.kernel.KernelPointer;
 import org.ps5jb.sdk.include.sys.errno.NotFoundException;
 import org.ps5jb.sdk.include.sys.proc.Process;
+import org.ps5jb.sdk.include.sys.proc.Thread;
 import org.ps5jb.sdk.include.vm.map.VmSpace;
 import org.ps5jb.sdk.lib.LibKernel;
 
@@ -21,8 +22,6 @@ public class KernelStabilizer {
     private static final long OFFSET_FILE_F_DATA = 0L;
     private static final long OFFSET_FILE_F_TYPE = 32L;
     private static final long OFFSET_FILE_F_COUNT = 40L;
-    private static final long OFFSET_THREAD_KSTACK_OBJ = 1128L;
-    private static final long OFFSET_THREAD_KSTACK = 1136L;
     private static final long OFFSET_VM_MAP_ENTRY_START = 32L;
     private static final long OFFSET_VM_MAP_ENTRY_OBJECT = 80L;
     private static final long OFFSET_VM_MAP_ENTRY_NEXT = 8L;
@@ -47,11 +46,11 @@ public class KernelStabilizer {
      * @param threadAddress Address of the thread struct of the reclaimed thread.
      */
     public void fixupKernelStack(KernelPointer threadAddress) {
-        KernelPointer kstack_obj_ptr = threadAddress.pptr(OFFSET_THREAD_KSTACK_OBJ);                            // struct thread -> struct vm_object *td_kstack_obj
+        KernelPointer kstack_obj_ptr = threadAddress.pptr(Thread.OFFSET_TD_KSTACK_OBJ);                            // struct thread -> struct vm_object *td_kstack_obj
 
         // Wipe `td_kstack`, thus kernel would not try to destroy it.
-        threadAddress.write8(OFFSET_THREAD_KSTACK, 0L);                                                   // struct thread -> vm_offset_t td_kstack
-        kstack_obj_ptr.write4(OFFSET_VM_OBJECT_REF_COUNT, 0x10);                                          // struct vm_object -> int ref_count
+        threadAddress.write8(Thread.OFFSET_TD_KSTACK, 0L);                                                   // struct thread -> vm_offset_t td_kstack
+        kstack_obj_ptr.write4(OFFSET_VM_OBJECT_REF_COUNT, 0x10);                                            // struct vm_object -> int ref_count
     }
 
     /**

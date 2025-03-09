@@ -352,4 +352,28 @@ public class ErrNo {
     public int checkLastException(int returnValue, Class clazz, String keySuffix, Object ... formatArgs) throws SdkException {
         return (int) checkLastException((long) returnValue, clazz, keySuffix, formatArgs);
     }
+
+    /**
+     * Same as {@link #checkLastException(long, Class, String, Object...)}
+     * but uses a generic error message in case of an exception.
+     *
+     * @param returnValue Actual return value.
+     * @return Value of returnValue.
+     * @throws SdkException If return value is not -1.
+     */
+    public long checkLastException(long returnValue) throws SdkException {
+        return checkLastException(returnValue, ErrNo.class, "checkLastException");
+    }
+
+    /**
+     * Same as {@link #checkLastException(int, Class, String, Object...)}
+     * but uses a generic error message in case of an exception.
+     *
+     * @param returnValue Actual return value.
+     * @return Value of returnValue.
+     * @throws SdkException If return value is not -1.
+     */
+    public int checkLastException(int returnValue) throws SdkException {
+        return checkLastException(returnValue, ErrNo.class, "checkLastException");
+    }
 }

@@ -33,7 +33,7 @@ public class CpuSet {
             }
             result.refresh();
             return result;
-        } catch (SdkException | SdkRuntimeException e) {
+        } catch (SdkException | RuntimeException | Error e) {
             result.free();
             throw e;
         }

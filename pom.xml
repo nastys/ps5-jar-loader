@@ -70,7 +70,13 @@
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
-                <version>5.11.3</version>
+                <version>5.12.0</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-junit-jupiter</artifactId>
+                <version>5.16.0</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -162,6 +168,16 @@
                         -->
                         <argLine>-XX:-UseCompressedOops -XX:+UseSerialGC -Xms16M -Xmx256M -Xss1M</argLine>
                     </configuration>
+                    <executions>
+                        <!-- Move unit test goal to verify phase so it's not executed before packaging -->
+                        <execution>
+                            <id>default-test</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
 
                 <plugin>

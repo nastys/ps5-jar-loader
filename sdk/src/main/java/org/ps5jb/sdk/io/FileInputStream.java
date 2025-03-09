@@ -6,8 +6,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.ps5jb.sdk.core.SdkException;
 import org.ps5jb.sdk.core.SdkRuntimeException;
 import org.ps5jb.sdk.include.ErrNo;
+import org.ps5jb.sdk.include.sys.FCntl;
 import org.ps5jb.sdk.include.sys.fcntl.OpenFlag;
 import org.ps5jb.sdk.lib.LibKernel;
 import org.ps5jb.sdk.res.ErrorMessages;
@@ -57,26 +59,17 @@ public class FileInputStream extends java.io.FileInputStream {
 
     private void openFile(java.io.File file) throws FileNotFoundException {
         LibKernel libKernel = new LibKernel();
-        int fd;
+        FCntl fcntl = new FCntl(libKernel);
+        ErrNo errNo = new ErrNo(libKernel);
         try {
-            fd = libKernel.open(file.getAbsolutePath(), OpenFlag.or(OpenFlag.O_RDONLY));
-            if (fd == -1) {
-                ErrNo errNo = new ErrNo(libKernel);
-                throw new FileNotFoundException(ErrorMessages.getClassErrorMessage(getClass(),
-                        "fileOpenException", file.getAbsolutePath(), errNo.getLastError()));
-            }
+            FileDescriptorFactory.openFile(fcntl, getFd(), file.getAbsolutePath(), OpenFlag.O_RDONLY);
+        } catch (SdkException e) {
+            FileNotFoundException ex = new FileNotFoundException(ErrorMessages.getClassErrorMessage(getClass(),
+                    "fileOpenException", file.getAbsolutePath(), errNo.getLastError()));
+            ex.initCause(e);
+            throw ex;
         } finally {
             libKernel.closeLibrary();
-        }
-
-        try {
-            Method setMethod = java.io.FileDescriptor.class.getDeclaredMethod("set", new Class[] { int.class });
-            setMethod.setAccessible(true);
-            setMethod.invoke(getFd(), new Object[] { new Integer(fd) });
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            throw new SdkRuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new SdkRuntimeException(e.getTargetException());
         }
     }
 }

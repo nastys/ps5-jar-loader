@@ -7,9 +7,7 @@ import org.ps5jb.sdk.core.Pointer;
  * Wrapper class over pointer to allow manipulation of the allocated native memory
  * as an array of Java <code>long</code> type.
  *
- * Note that this technique only seems to work on PS5 (likely due to presence of hypervisor).
- * Attempting to use the same class on another system results in JVM garbage collector
- * crashing if care is not taken properly to "hide" the exposed data view from GC as soon as possible.
+ * Note that this technique only works with serial GC (used on PS5).
  */
 public class LongViewPointer extends Pointer {
     private static final long serialVersionUID = 4698355706655405326L;

@@ -5,6 +5,7 @@ import java.nio.charset.Charset;
 import org.ps5jb.sdk.core.kernel.KernelPointer;
 import org.ps5jb.sdk.include.sys.Param;
 import org.ps5jb.sdk.include.sys.mutex.MutexType;
+import org.ps5jb.sdk.include.sys.ucred.UCred;
 
 /**
  * Incomplete wrapper for FreeBSD <code>thread</code> structure.
@@ -15,10 +16,15 @@ public class Thread {
     public static final long OFFSET_TD_PLIST_TQE_NEXT = OFFSET_TD_PROC + 8L;
     public static final long OFFSET_TD_PLIST_TQE_PREV = OFFSET_TD_PLIST_TQE_NEXT + 8L;
     public static final long OFFSET_TD_TID = 156L;
+    public static final long OFFSET_TD_UCRED = 320L;
     public static final long OFFSET_TD_NAME = 660L;
+    public static final long OFFSET_TD_KSTACK_OBJ = 1128L;
+    public static final long OFFSET_TD_KSTACK = OFFSET_TD_KSTACK_OBJ + 8L;
+    public static final long OFFSET_TD_KSTACK_PAGES = OFFSET_TD_KSTACK + 8L;
 
     private final KernelPointer ptr;
     private MutexType mtx;
+    private UCred ucred;
 
     /**
      * Process constructor from existing pointer.
@@ -60,7 +66,7 @@ public class Thread {
     /**
      * Thread identifier.
      *
-     * @return Returns the value of <code>p_tid</code> field of <code>thread</code> structure.
+     * @return Returns the value of <code>td_tid</code> field of <code>thread</code> structure.
      */
     public int getTid() {
         return ptr.read4(OFFSET_TD_TID);
@@ -73,6 +79,45 @@ public class Thread {
      */
     public String getName() {
         return ptr.readString(OFFSET_TD_NAME, new Integer(Param.MAXCOMLEN + 1), Charset.defaultCharset().name());
+    }
+
+    /**
+     * Reference to credentials.
+     *
+     * @return Returns the wrapper over the value of <code>td_ucred</code> field of <code>thread</code> structure.
+     */
+    public UCred getUserCredentials() {
+        if (ucred == null) {
+            ucred = new UCred(this.ptr.pptr(OFFSET_TD_UCRED));
+        }
+        return ucred;
+    }
+
+    /**
+     * Kstack object.
+     *
+     * @return Returns the value of <code>td_kstack_obj</code> field of <code>thread</code> structure.
+     */
+    public KernelPointer getKstackObj() {
+        return this.ptr.pptr(OFFSET_TD_KSTACK_OBJ);
+    }
+
+    /**
+     * Kernel VA of kstack.
+     *
+     * @return Returns the value of <code>td_kstack</code> field of <code>thread</code> structure.
+     */
+    public KernelPointer getKstack() {
+        return this.ptr.pptr(OFFSET_TD_KSTACK);
+    }
+
+    /**
+     * Size of the kstack.
+     *
+     * @return Returns the value of <code>td_kstack_pages</code> field of <code>thread</code> structure.
+     */
+    public int getKstackPages() {
+        return ptr.read4(OFFSET_TD_KSTACK_PAGES);
     }
 
     /**
