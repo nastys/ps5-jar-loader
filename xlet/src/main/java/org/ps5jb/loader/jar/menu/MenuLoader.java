@@ -23,6 +23,7 @@ import java.io.IOException;
 public class MenuLoader extends HContainer implements Runnable, UserEventListener, JarLoader {
     private static String[] discPayloadList;
     private static String[] usbPayloadList;
+    private static String[] pipelineList;
     private static File usbPayloadRoot;
 
     private boolean active = true;
@@ -33,6 +34,7 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
     private Ps5MenuLoader ps5MenuLoader;
 
     private File discPayloadPath = null;
+    private File pipelinePath = null;
     private JarLoader remoteJarLoaderJob = null;
     private Thread remoteJarLoaderThread = null;
 
@@ -77,6 +79,9 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
                             }
                             remoteJarLoaderThread = null;
                             remoteJarLoaderJob = null;
+                        } else if (pipelinePath != null) {
+                            PipelineRunner.runPipeline(pipelinePath, this);
+                            pipelinePath = null;
                         }
 
                         // Reload the menu in case paths to payloads changed after JAR execution
@@ -109,7 +114,7 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
         if (discPayloadList == null) {
             final File dir = Config.getLoaderPayloadPath();
             if (dir.isDirectory() && dir.canRead()) {
-                discPayloadList = dir.list();
+                discPayloadList = dir.list((dir1, name) -> name.toLowerCase().endsWith(".jar"));
             }
 
             if (discPayloadList == null) {
@@ -121,7 +126,7 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
 
 
     /**
-     * Returns a list of ELF files that are present on usb.
+     * Returns a list of ELF/BIN files that are present on usb.
      *
      * @return Array of sendable ELF files or an empty list if there are none.
      */
@@ -151,11 +156,31 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
         return usbPayloadList;
     }
 
+    /**
+     * Returns a list of Pipeline files that are present on /.
+     *
+     * @return Array of loadable JAR files or an empty list if there are none.
+     */
+    public static String[] listPipelines() {
+        if (pipelineList == null) {
+            final File dir = Config.getLoaderPayloadPath();
+            if (dir.isDirectory() && dir.canRead()) {
+                pipelineList = dir.list((dir1, name) -> name.toLowerCase().endsWith(".pipe"));
+            }
+
+            if (pipelineList == null) {
+                pipelineList = new String[0];
+            }
+        }
+        return pipelineList;
+    }
+
     private Ps5MenuLoader initMenuLoader() throws IOException {
         Ps5MenuLoader ps5MenuLoader = new Ps5MenuLoader(new Ps5MenuItem[]{
                 new Ps5MenuItem("Remote JAR loader", "wifi_icon.png"),
                 new Ps5MenuItem("Disk JAR loader", "disk_icon.png"),
-                new Ps5MenuItem("USB ELF/BIN sender", "usb_icon.png")
+                new Ps5MenuItem("USB ELF/BIN sender", "usb_icon.png"),
+                new Ps5MenuItem("Pipeline runner", "pipeline_icon.png")
         });
 
         // init disk jar loader sub items
@@ -168,6 +193,14 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
         ps5MenuLoader.setSubmenuItems(2, diskSubItems);
 
         initUsbElfSender(ps5MenuLoader);
+
+        final String[] pipelines = listPipelines();
+        final Ps5MenuItem[] pipelinesSubItems = new Ps5MenuItem[pipelines.length];
+        for (int i = 0; i < pipelines.length; i++) {
+            final String payload = pipelines[i];
+            pipelinesSubItems[i] = new Ps5MenuItem(payload, null);
+        }
+        ps5MenuLoader.setSubmenuItems(4, pipelinesSubItems);
 
         return ps5MenuLoader;
     }
@@ -340,6 +373,12 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
                             Ps5MenuItem selectedItem = ps5MenuLoader.getSubmenuItems(ps5MenuLoader.getSelected())[ps5MenuLoader.getSelectedSub() - 1];
                             File elfToSend = new File(usbPayloadRoot, selectedItem.getLabel());
                             PayloadSender.sendPayloadFromFile(elfToSend);
+                            active = false;
+                        }
+                    }  else if (ps5MenuLoader.getSelected() == 4) {
+                        if (pipelineList.length > 0) {
+                            Ps5MenuItem selectedItem = ps5MenuLoader.getSubmenuItems(ps5MenuLoader.getSelected())[ps5MenuLoader.getSelectedSub() - 1];
+                            pipelinePath = new File(Config.getLoaderPayloadPath(), selectedItem.getLabel());
                             active = false;
                         }
                     }

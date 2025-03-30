@@ -85,7 +85,7 @@ public class Ps5MenuLoader {
 
         g2d.setColor(Color.LIGHT_GRAY);
         g2d.setFont(new Font("Sans", Font.PLAIN, 16));
-        g2d.drawString("Press X to select JAR loader.", 30, 50);
+        g2d.drawString("Press X to select menu entry.", 30, 50);
     }
 
     public int getSelected() {
