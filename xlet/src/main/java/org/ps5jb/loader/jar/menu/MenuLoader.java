@@ -130,7 +130,8 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
         for (int i = 0; i < 8; i++) {
             try {
                 File f = new File("/mnt/usb" + i);
-                if (f.exists() && f.list((dir1, name) -> name.toLowerCase().endsWith(".elf")).length > 0) {
+                if (f.exists() &&
+                    f.list((dir1, name) -> name.toLowerCase().endsWith(".elf") || name.toLowerCase().endsWith(".bin")).length > 0) {
                     Status.println("Found usb with elf(s) on " + f.getAbsolutePath());
                     usbPayloadRoot = f;
                     break;
@@ -141,7 +142,7 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
         }
 
         if (usbPayloadRoot != null && usbPayloadRoot.isDirectory() && usbPayloadRoot.canRead()) {
-            usbPayloadList = usbPayloadRoot.list((dir1, name) -> name.toLowerCase().endsWith(".elf"));
+            usbPayloadList = usbPayloadRoot.list((dir1, name) -> name.toLowerCase().endsWith(".elf") || name.toLowerCase().endsWith(".bin"));
         } else {
             Status.println("No usb with elf(s) found");
             usbPayloadList = new String[0];
@@ -154,7 +155,7 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
         Ps5MenuLoader ps5MenuLoader = new Ps5MenuLoader(new Ps5MenuItem[]{
                 new Ps5MenuItem("Remote JAR loader", "wifi_icon.png"),
                 new Ps5MenuItem("Disk JAR loader", "disk_icon.png"),
-                new Ps5MenuItem("USB ELF sender", "usb_icon.png")
+                new Ps5MenuItem("USB ELF/BIN sender", "usb_icon.png")
         });
 
         // init disk jar loader sub items
