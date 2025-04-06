@@ -177,10 +177,10 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
 
     private Ps5MenuLoader initMenuLoader() throws IOException {
         Ps5MenuLoader ps5MenuLoader = new Ps5MenuLoader(new Ps5MenuItem[]{
-                new Ps5MenuItem("Remote JAR loader", "wifi_icon.png"),
-                new Ps5MenuItem("Disk JAR loader", "disk_icon.png"),
+                new Ps5MenuItem("Pipeline runner", "pipeline_icon.png"),
+                new Ps5MenuItem("Disc JAR loader", "disk_icon.png"),
                 new Ps5MenuItem("USB ELF/BIN sender", "usb_icon.png"),
-                new Ps5MenuItem("Pipeline runner", "pipeline_icon.png")
+                new Ps5MenuItem("Remote JAR loader", "wifi_icon.png")
         });
 
         // init disk jar loader sub items
@@ -200,7 +200,7 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
             final String payload = pipelines[i];
             pipelinesSubItems[i] = new Ps5MenuItem(payload, null);
         }
-        ps5MenuLoader.setSubmenuItems(4, pipelinesSubItems);
+        ps5MenuLoader.setSubmenuItems(1, pipelinesSubItems);
 
         return ps5MenuLoader;
     }
@@ -351,7 +351,24 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
                     if (waiting) {
                         active = true;
                         waiting = false;
-                    } else if (ps5MenuLoader.getSelected() == 1 && remoteJarLoaderThread == null) {
+                    } else if (ps5MenuLoader.getSelected() == 1) {
+                        if (pipelineList.length > 0) {
+                            Ps5MenuItem selectedItem = ps5MenuLoader.getSubmenuItems(ps5MenuLoader.getSelected())[ps5MenuLoader.getSelectedSub() - 1];
+                            pipelinePath = new File(Config.getLoaderPayloadPath(), selectedItem.getLabel());
+                            active = false;
+                        }
+                    } else if (ps5MenuLoader.getSelected() == 2) {
+                        Ps5MenuItem selectedItem = ps5MenuLoader.getSubmenuItems(ps5MenuLoader.getSelected())[ps5MenuLoader.getSelectedSub() - 1];
+                        discPayloadPath = new File(Config.getLoaderPayloadPath(), selectedItem.getLabel());
+                        active = false;
+                    } else if (ps5MenuLoader.getSelected() == 3) {
+                        if (usbPayloadList.length > 0) {
+                            Ps5MenuItem selectedItem = ps5MenuLoader.getSubmenuItems(ps5MenuLoader.getSelected())[ps5MenuLoader.getSelectedSub() - 1];
+                            File elfToSend = new File(usbPayloadRoot, selectedItem.getLabel());
+                            PayloadSender.sendPayloadFromFile(elfToSend);
+                            active = false;
+                        }
+                    } else if (ps5MenuLoader.getSelected() == 4 && remoteJarLoaderThread == null) {
                         try {
                             remoteJarLoaderJob = new RemoteJarLoader(Config.getLoaderPort());
                             remoteJarLoaderThread = new Thread(remoteJarLoaderJob, "RemoteJarLoader");
@@ -364,23 +381,6 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
                             waiting = true;
                         }
                         active = false;
-                    } else if (ps5MenuLoader.getSelected() == 2) {
-                        Ps5MenuItem selectedItem = ps5MenuLoader.getSubmenuItems(ps5MenuLoader.getSelected())[ps5MenuLoader.getSelectedSub() - 1];
-                        discPayloadPath = new File(Config.getLoaderPayloadPath(), selectedItem.getLabel());
-                        active = false;
-                    }  else if (ps5MenuLoader.getSelected() == 3) {
-                        if (usbPayloadList.length > 0) {
-                            Ps5MenuItem selectedItem = ps5MenuLoader.getSubmenuItems(ps5MenuLoader.getSelected())[ps5MenuLoader.getSelectedSub() - 1];
-                            File elfToSend = new File(usbPayloadRoot, selectedItem.getLabel());
-                            PayloadSender.sendPayloadFromFile(elfToSend);
-                            active = false;
-                        }
-                    }  else if (ps5MenuLoader.getSelected() == 4) {
-                        if (pipelineList.length > 0) {
-                            Ps5MenuItem selectedItem = ps5MenuLoader.getSubmenuItems(ps5MenuLoader.getSelected())[ps5MenuLoader.getSelectedSub() - 1];
-                            pipelinePath = new File(Config.getLoaderPayloadPath(), selectedItem.getLabel());
-                            active = false;
-                        }
                     }
                     break;
             }
