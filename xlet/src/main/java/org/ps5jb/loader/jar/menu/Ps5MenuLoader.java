@@ -13,7 +13,7 @@ import java.util.Map;
 public class Ps5MenuLoader {
     private int selected = 1;
     private int selectedSub = 1;
-    private boolean subMenuActive = false;
+    private boolean subMenuActive = true;
 
     private final Ps5MenuItem[] menuItems;
     private Map submenuItems = new HashMap();

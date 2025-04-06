@@ -297,7 +297,7 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
                     }
                     switch(ps5MenuLoader.getSelected()) {
                         case 1:
-                            ps5MenuLoader.setSubMenuActive(false);
+                            ps5MenuLoader.setSubMenuActive(true);
                             break;
                         case 2:
                             ps5MenuLoader.setSubMenuActive(true);
@@ -309,6 +309,9 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
                             } catch (IOException e) {
                                 Status.printStackTrace("Error initUsbElfSender()", e);
                             }
+                            break;
+                        case 4:
+                            ps5MenuLoader.setSubMenuActive(false);
                             break;
                     }
                     break;
@@ -319,7 +322,7 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
                     }
                     switch(ps5MenuLoader.getSelected()) {
                         case 1:
-                            ps5MenuLoader.setSubMenuActive(false);
+                            ps5MenuLoader.setSubMenuActive(true);
                             break;
                         case 2:
                             ps5MenuLoader.setSubMenuActive(true);
@@ -331,6 +334,9 @@ public class MenuLoader extends HContainer implements Runnable, UserEventListene
                             } catch (IOException e) {
                                 Status.printStackTrace("Error initUsbElfSender()", e);
                             }
+                            break;
+                        case 4:
+                            ps5MenuLoader.setSubMenuActive(false);
                             break;
                     }
                     break;
